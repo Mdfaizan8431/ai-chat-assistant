@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Documents Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#212121;
+  --sidebar-bg:#171717;
+  --surface:#2f2f2f;
+  --surface2:#3d3d3d;
+  --border:#3d3d3d;
+  --text:#ececec;
+  --text-muted:#8e8ea0;
+  --text-dim:#6b6b7b;
+  --accent:#10a37f;
+  --accent-hover:#0e9070;
+  --danger:#ef4444;
+  --info:#3b82f6;
+  --warning:#f59e0b;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── TOP NAV */
+.nav{
+  background:var(--sidebar-bg);border-bottom:1px solid var(--border);
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10;
+}
+.nav-left{display:flex;align-items:center;gap:14px;}
+.back-btn{
+  display:flex;align-items:center;gap:6px;padding:7px 14px;
+  border-radius:8px;background:var(--surface);border:1px solid var(--border);
+  color:var(--text-muted);font-size:13px;font-weight:500;cursor:pointer;
+  text-decoration:none;transition:all .15s;font-family:inherit;
+}
+.back-btn:hover{color:var(--text);border-color:var(--text-dim);}
+.nav-title{font-size:15px;font-weight:600;color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.status-pill{
+  display:flex;align-items:center;gap:6px;padding:5px 12px;
+  border-radius:20px;background:var(--surface);font-size:12px;color:var(--text-muted);
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.dot{animation:blink 2s ease-in-out infinite;}
+.dot.error{background:var(--danger);animation:none;}
+
+/* ── MAIN CONTENT */
+.page{max-width:900px;margin:0 auto;padding:32px 24px;}
+
+/* Stats bar */
+.stats-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;
+}
+.stat-card{
+  background:var(--surface);border-radius:12px;padding:18px 20px;
+  border:1px solid var(--border);
+}
+.stat-val{font-size:28px;font-weight:600;color:var(--text);line-height:1;}
+.stat-lbl{font-size:12px;color:var(--text-dim);margin-top:6px;}
+.stat-icon{font-size:20px;margin-bottom:8px;}
+
+/* Section header */
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.section-title{font-size:14px;font-weight:600;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+.clear-all-btn{
+  display:flex;align-items:center;gap:6px;padding:7px 14px;
+  border-radius:8px;background:transparent;border:1px solid #5a2020;
+  color:var(--danger);font-size:13px;font-weight:500;cursor:pointer;
+  transition:all .2s;font-family:inherit;
+}
+.clear-all-btn:hover{background:rgba(239,68,68,.08);}
+
+/* Upload zone */
+.upload-zone{
+  border:1.5px dashed var(--border);border-radius:12px;
+  padding:28px;text-align:center;cursor:pointer;
+  transition:all .2s;margin-bottom:20px;
+  background:transparent;
+}
+.upload-zone:hover,.upload-zone.drag{
+  border-color:var(--accent);background:rgba(16,163,127,.05);
+}
+.upload-icon{font-size:28px;margin-bottom:8px;}
+.upload-main{font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px;}
+.upload-sub{font-size:12px;color:var(--text-dim);}
+#fileInput{display:none;}
+
+/* Doc table */
+.doc-table{
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--border);overflow:hidden;
+}
+.doc-table-head{
+  display:grid;grid-template-columns:1fr 100px 120px 80px;
+  padding:11px 16px;border-bottom:1px solid var(--border);
+  font-size:11px;font-weight:600;color:var(--text-dim);
+  letter-spacing:.04em;text-transform:uppercase;
+}
+.doc-row{
+  display:grid;grid-template-columns:1fr 100px 120px 80px;
+  padding:13px 16px;border-bottom:1px solid var(--border);
+  align-items:center;transition:background .1s;
+}
+.doc-row:last-child{border-bottom:none;}
+.doc-row:hover{background:rgba(255,255,255,.03);}
+.doc-name-cell{display:flex;align-items:center;gap:10px;min-width:0;}
+.file-icon{
+  width:32px;height:32px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+}
+.file-icon.pdf{background:rgba(239,68,68,.15);color:#f87171;}
+.file-icon.txt{background:rgba(59,130,246,.15);color:#60a5fa;}
+.file-icon.other{background:var(--surface2);color:var(--text-muted);}
+.doc-filename{font-size:13.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-cell{font-size:13px;color:var(--text-muted);}
+.delete-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:7px;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text-dim);transition:all .15s;font-size:15px;
+}
+.delete-btn:hover{background:rgba(239,68,68,.12);color:var(--danger);}
+
+/* Empty state */
+.empty-state{
+  padding:56px 24px;text-align:center;
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--border);
+}
+.empty-icon{font-size:36px;margin-bottom:14px;}
+.empty-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--text-dim);}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  padding:12px 18px;border-radius:10px;font-size:13.5px;
+  font-weight:500;z-index:100;opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.toast.show{opacity:1;}
+.toast.success{background:#134e3a;color:#34d399;border:1px solid #1a6b4f;}
+.toast.error{background:#450a0a;color:#f87171;border:1px solid #7f1d1d;}
+
+/* Loading */
+.loading{
+  padding:40px;text-align:center;color:var(--text-dim);font-size:13px;
+  background:var(--surface);border-radius:12px;border:1px solid var(--border);
+}
+
+@media(max-width:600px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .doc-table-head,.doc-row{grid-template-columns:1fr 80px;}
+  .doc-table-head .col-chunks,.doc-row .col-chunks,
+  .doc-table-head .col-date,.doc-row .col-date{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <a href="/" class="back-btn">← Back to Chat</a>
+    <div class="nav-title">📂 Documents Manager</div>
+  </div>
+  <div class="nav-right">
+    <div class="status-pill">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">Checking…</span>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">📄</div>
+      <div class="stat-val" id="statDocs">—</div>
+      <div class="stat-lbl">Total Documents</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-val" id="statChunks">—</div>
+      <div class="stat-lbl">Total Chunks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-val" id="statStatus">—</div>
+      <div class="stat-lbl">Vector Store</div>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-icon">📤</div>
+    <div class="upload-main">Click or drag files to upload</div>
+    <div class="upload-sub">Supported: PDF, TXT</div>
+  </div>
+  <input type="file" id="fileInput" accept=".pdf,.txt" multiple/>
+
+  <!-- Document list -->
+  <div class="section-header">
+    <div class="section-title">Uploaded Files</div>
+    <button class="clear-all-btn" onclick="clearAll()">🗑️ Clear All</button>
+  </div>
+
+  <div id="docArea"><div class="loading">Loading documents…</div></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = 'http://localhost:8000';
+
+let allFiles = [];
+
+async function init(){
+  await checkHealth();
+  await loadDocs();
+}
+
+async function checkHealth(){
+  try{
+    const r = await fetch(BASE+'/health');
+    const d = await r.json();
+    document.getElementById('statusDot').className='dot';
+    document.getElementById('statusText').textContent='Online';
+  }catch{
+    document.getElementById('statusDot').className='dot error';
+    document.getElementById('statusText').textContent='Offline';
+  }
+}
+
+async function loadDocs(){
+  try{
+    const r = await fetch(BASE+'/documents');
+    const d = await r.json();
+    allFiles = d.uploaded_files || [];
+    const chunks = d.total_chunks || 0;
+
+    document.getElementById('statDocs').textContent = allFiles.length;
+    document.getElementById('statChunks').textContent = chunks;
+    document.getElementById('statStatus').textContent = chunks > 0 ? 'Ready' : 'Empty';
+
+    renderTable(allFiles);
+  }catch(e){
+    document.getElementById('docArea').innerHTML=`
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Could not load documents</div>
+        <div class="empty-sub">Make sure your server is running at ${BASE}</div>
+      </div>`;
+  }
+}
+
+function getFileIcon(name){
+  const ext = name.split('.').pop().toLowerCase();
+  if(ext==='pdf') return {cls:'pdf',icon:'📕'};
+  if(ext==='txt') return {cls:'txt',icon:'📝'};
+  return {cls:'other',icon:'📄'};
+}
+
+function renderTable(files){
+  const area = document.getElementById('docArea');
+
+  if(!files.length){
+    area.innerHTML=`
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">No documents uploaded yet</div>
+        <div class="empty-sub">Upload PDF or TXT files above to get started with RAG</div>
+      </div>`;
+    return;
+  }
+
+  const rows = files.map((f,i)=>{
+    const {cls,icon} = getFileIcon(f);
+    return `
+      <div class="doc-row">
+        <div class="doc-name-cell">
+          <div class="file-icon ${cls}">${icon}</div>
+          <div class="doc-filename" title="${f}">${f}</div>
+        </div>
+        <div class="doc-cell col-chunks">—</div>
+        <div class="doc-cell col-date">Uploaded</div>
+        <div class="doc-cell" style="display:flex;justify-content:flex-end;">
+          <button class="delete-btn" onclick="deleteFile('${f}')" title="Delete">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  area.innerHTML=`
+    <div class="doc-table">
+      <div class="doc-table-head">
+        <div>File Name</div>
+        <div class="col-chunks">Chunks</div>
+        <div class="col-date">Status</div>
+        <div></div>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+async function deleteFile(filename){
+  if(!confirm(`Delete "${filename}"?`)) return;
+  showToast(`Deleting ${filename}…`,'success');
+  // Note: add a DELETE /documents/{filename} endpoint to backend for per-file delete
+  // For now show a message
+  showToast('To delete individual files, add a DELETE /documents/{filename} endpoint to your backend.','error');
+}
+
+async function clearAll(){
+  if(!confirm('Clear ALL documents? This cannot be undone.')) return;
+  try{
+    await fetch(BASE+'/documents',{method:'DELETE'});
+    showToast('All documents cleared','success');
+    await loadDocs();
+  }catch(e){
+    showToast('Error: '+e.message,'error');
+  }
+}
+
+// Upload
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+zone.addEventListener('drop',e=>{
+  e.preventDefault();zone.classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+});
+document.getElementById('fileInput').addEventListener('change',e=>handleFiles(e.target.files));
+
+async function handleFiles(files){
+  for(const f of files) await uploadFile(f);
+}
+
+async function uploadFile(file){
+  showToast(`Uploading ${file.name}…`,'success');
+  try{
+    const fd = new FormData();
+    fd.append('file',file);
+    const r = await fetch(BASE+'/upload',{method:'POST',body:fd});
+    const d = await r.json();
+    if(r.ok){
+      showToast(`✅ ${file.name} — ${d.chunks_added} chunks added`,'success');
+      await loadDocs();
+    }else{
+      showToast(`❌ ${d.detail}`,'error');
+    }
+  }catch(e){
+    showToast('❌ Upload error: '+e.message,'error');
+  }
+}
+
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+init();
+</script>
+</body>
+</html>

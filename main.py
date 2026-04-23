@@ -8,9 +8,16 @@ from datetime import datetime
 import shutil
 import os
 
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+
+# ✅ THIS IS THE KEY FIX:
+# Get the folder where THIS file (app_rag.py) lives
+# So HTML files are always found, no matter where you run from
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # RAG + Groq
 from vector_store import get_vector_store
-from llm import stream_llm_response, get_llm_response  # ✅ added get_llm_response
+from llm import stream_llm_response, get_llm_response
 from document_processor import process_file, get_supported_extensions
 
 # Agent
@@ -29,13 +36,13 @@ app.add_middleware(
 
 # Init
 init_db()
-UPLOAD_DIR = "uploaded_files"
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploaded_files")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 vector_store = None
 
 # ─────────────────────────────────────────────
-# ✅ RAG FUNCTION (Groq)
+# RAG FUNCTION
 # ─────────────────────────────────────────────
 def rag_chat(query):
     try:
@@ -66,7 +73,6 @@ def rag_chat(query):
         Answer:
         """
 
-        # ⚠️ Streaming → convert to string
         answer = "".join([chunk for chunk in stream_llm_response(prompt)])
 
         return {
@@ -89,23 +95,41 @@ def get_or_init_vector_store():
 
 system_prompt = """You are a helpful AI assistant."""
 
-# class Message(BaseModel):
-#     text: str
-#     use_rag: bool = False
-#     use_agent: bool = False
 class Message(BaseModel):
     text: str
 
 # ─────────────────────────────────────────────
 # ROUTES
 # ─────────────────────────────────────────────
+
+# ✅ FIXED: Use BASE_DIR so the file is always found
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     try:
-        with open("chatbot-interface-agent.html", "r", encoding="utf-8") as f:
+        html_path = os.path.join(BASE_DIR, "chatbot-interface-agent.html")
+        with open(html_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    except:
-        return HTMLResponse("<h1>UI not found</h1>", status_code=404)
+    except FileNotFoundError:
+        return HTMLResponse(
+            "<h1>❌ chatbot-interface-agent.html not found</h1>"
+            f"<p>Looking in: {BASE_DIR}</p>"
+            "<p>Make sure the HTML file is in the same folder as app_rag.py</p>",
+            status_code=404
+        )
+
+# ✅ FIXED: Documents manager page
+@app.get("/documents-manager", response_class=HTMLResponse)
+async def serve_documents_manager():
+    try:
+        html_path = os.path.join(BASE_DIR, "documents-manager.html")
+        with open(html_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            "<h1>❌ documents-manager.html not found</h1>"
+            f"<p>Looking in: {BASE_DIR}</p>",
+            status_code=404
+        )
 
 
 @app.get("/health")
@@ -160,73 +184,8 @@ def list_documents():
 
 
 # ─────────────────────────────────────────────
-# MAIN CHAT (FIXED)
+# MAIN CHAT
 # ─────────────────────────────────────────────
-# @app.post("/chat")
-# async def chat(msg: Message):
-#     user_text = msg.text.strip()
-
-#     if not user_text:
-#         raise HTTPException(status_code=400, detail="Empty message")
-
-#     save_message("User", user_text)
-
-#     # 🔥 AGENT MODE (FIXED → Groq + tools)
-#     if msg.use_agent:
-#         try:
-#             vs = get_or_init_vector_store()
-
-#             # ✅ Use Groq LLM instead of Ollama
-#             agent = create_agent(get_llm_response, vector_store=vs)
-
-#             result = agent.run(user_text)
-
-#             reply = result["response"]
-#             save_message("Assistant", reply)
-
-#             return {
-#                 "reply": reply,
-#                 "used_agent": True
-#             }
-
-#         except Exception as e:
-#             return {"reply": f"Agent error: {str(e)}"}
-
-#     # ───────── RAG MODE
-#     if msg.use_rag:
-#         result = rag_chat(user_text)
-
-#         reply = result["answer"]
-#         sources = result["sources"]
-
-#         save_message("Assistant", reply)
-
-#         return {
-#             "reply": reply,
-#             "used_rag": True,
-#             "sources": sources
-#         }
-
-#     # ───────── NORMAL CHAT
-#     try:
-#         history = system_prompt + "\n\n"
-#         for role, content in get_last_messages(limit=4):
-#             history += f"{role}: {content}\n"
-
-#         prompt = history + f"User: {user_text}\nAssistant:"
-
-#         reply = "".join([chunk for chunk in stream_llm_response(prompt)])
-
-#         save_message("Assistant", reply)
-
-#         return {
-#             "reply": reply,
-#             "used_rag": False
-#         }
-
-#     except Exception as e:
-#         return {"reply": f"LLM error: {str(e)}"}
-
 @app.post("/chat")
 async def chat(msg: Message):
     user_text = msg.text.strip()
@@ -238,67 +197,47 @@ async def chat(msg: Message):
 
     query_lower = user_text.lower()
 
-    # 🔥 AUTO DECISION RULES
     use_web = any(word in query_lower for word in ["latest", "news", "today", "current"])
     use_rag = len(os.listdir(UPLOAD_DIR)) > 0 and any(
         word in query_lower for word in ["document", "file", "pdf", "my data"]
     )
 
     try:
-        # 🔥 CASE 1: WEB SEARCH (Agent)
         if use_web:
             print("🌐 AUTO → WEB SEARCH")
-
             vs = get_or_init_vector_store()
             agent = create_agent(get_llm_response, vector_store=vs)
-
             result = agent.run(user_text)
             reply = result["response"]
-
             save_message("Assistant", reply)
-
             return {"reply": reply}
 
-        # 🔥 CASE 2: RAG
         elif use_rag:
             print("📄 AUTO → RAG")
-
             result = rag_chat(user_text)
             reply = result["answer"]
-
             save_message("Assistant", reply)
-
             return {"reply": reply}
 
-        # 🔥 CASE 3: NORMAL CHAT
         else:
             print("🧠 AUTO → NORMAL LLM")
-
             history = system_prompt + "\n\n"
             for role, content in get_last_messages(limit=4):
                 history += f"{role}: {content}\n"
-
             prompt = history + f"User: {user_text}\nAssistant:"
-
             reply = "".join([chunk for chunk in stream_llm_response(prompt)])
-
             save_message("Assistant", reply)
-
             return {"reply": reply}
 
     except Exception as e:
         return {"reply": f"Error: {str(e)}"}
 
-# ─────────────────────────────────────────────
-# STREAMING
-# ─────────────────────────────────────────────
-from fastapi.responses import StreamingResponse
-import time
-import os
 
 # ─────────────────────────────────────────────
-# STREAM CHAT (AUTO MODE - NO TOGGLES)
+# STREAM CHAT
 # ─────────────────────────────────────────────
+import time
+
 @app.post("/chat-stream")
 def chat_stream(msg: Message):
 
@@ -312,58 +251,37 @@ def chat_stream(msg: Message):
 
             query_lower = user_text.lower()
 
-            # 🔥 AUTO DECISION
             use_web = any(word in query_lower for word in ["latest", "news", "today", "current", "price"])
             use_rag = len(os.listdir(UPLOAD_DIR)) > 0 and any(
                 word in query_lower for word in ["document", "file", "pdf", "my data"]
             )
 
-            # ─────────────────────────────
-            # 🌐 WEB SEARCH (AGENT)
-            # ─────────────────────────────
             if use_web:
                 print("🌐 STREAM → WEB SEARCH")
-
                 vs = get_or_init_vector_store()
                 agent = create_agent(get_llm_response, vector_store=vs)
-
                 result = agent.run(user_text)
                 reply = result["response"]
-
-                # 🔥 stream word-by-word (fake streaming)
                 for word in reply.split():
                     yield word + " "
                     time.sleep(0.02)
-
                 return
 
-            # ─────────────────────────────
-            # 📄 RAG MODE
-            # ─────────────────────────────
             elif use_rag:
                 print("📄 STREAM → RAG")
-
                 result = rag_chat(user_text)
                 reply = result["answer"]
-
                 for word in reply.split():
                     yield word + " "
                     time.sleep(0.02)
-
                 return
 
-            # ─────────────────────────────
-            # 🧠 NORMAL CHAT (REAL STREAM)
-            # ─────────────────────────────
             else:
                 print("🧠 STREAM → NORMAL LLM")
-
                 history = system_prompt + "\n\n"
                 for role, content in get_last_messages(limit=6):
                     history += f"{role}: {content}\n"
-
                 prompt = history + f"User: {user_text}\nAssistant:"
-
                 for chunk in stream_llm_response(prompt):
                     yield chunk
 
@@ -378,7 +296,5 @@ def chat_stream(msg: Message):
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
-
     print("🚀 Running on http://localhost:8000")
-
     uvicorn.run(app, host="0.0.0.0", port=8000)

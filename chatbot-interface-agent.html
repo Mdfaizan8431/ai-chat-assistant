@@ -26,7 +26,6 @@
         --accent: #10a37f;
         --accent-hover: #0e9070;
         --user-bubble: #2f2f2f;
-        --bot-text: #ececec;
         --input-bg: #2f2f2f;
         --danger: #ef4444;
         --info: #3b82f6;
@@ -266,10 +265,11 @@
         border-radius: 50%;
         background: var(--accent);
         flex-shrink: 0;
+        animation: blink 2s ease-in-out infinite;
       }
       .dot.error {
         background: var(--danger);
-        animation: none !important;
+        animation: none;
       }
       .dot.warn {
         background: #f59e0b;
@@ -282,9 +282,6 @@
         50% {
           opacity: 0.4;
         }
-      }
-      .dot {
-        animation: blink 2s ease-in-out infinite;
       }
 
       /* Chat */
@@ -304,6 +301,7 @@
         border-radius: 4px;
       }
 
+      /* Welcome screen */
       .welcome {
         margin: auto;
         text-align: center;
@@ -361,12 +359,6 @@
         padding: 8px 0;
         width: 100%;
       }
-      .msg-row.user {
-        background: transparent;
-      }
-      .msg-row.bot {
-        background: transparent;
-      }
       .msg-inner {
         max-width: 720px;
         margin: 0 auto;
@@ -404,12 +396,6 @@
         flex: 1;
         min-width: 0;
       }
-      .bubble-name {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-muted);
-        margin-bottom: 6px;
-      }
       .bubble-text {
         font-size: 14.5px;
         line-height: 1.75;
@@ -430,41 +416,12 @@
         gap: 8px;
         margin-top: 6px;
       }
-      .badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-weight: 500;
-      }
-      .badge.rag {
-        background: rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-      }
-      .badge.web {
-        background: rgba(16, 163, 127, 0.15);
-        color: #34d399;
-      }
-      .badge.llm {
-        background: var(--surface);
-        color: var(--text-dim);
-      }
       .bubble-time {
         font-size: 11px;
         color: var(--text-dim);
       }
 
-      /* Sources */
-      .sources {
-        margin-top: 8px;
-        padding: 8px 12px;
-        background: var(--surface);
-        border-radius: 8px;
-        font-size: 12px;
-        color: var(--text-muted);
-        border-left: 2px solid var(--info);
-      }
-
-      /* Typing */
+      /* Typing indicator */
       .typing-wrap {
         padding: 8px 0;
       }
@@ -519,7 +476,6 @@
         border-radius: 14px;
         display: flex;
         align-items: flex-end;
-        gap: 0;
         transition: border-color 0.2s;
         padding: 4px 6px 4px 16px;
       }
@@ -550,6 +506,7 @@
         background: var(--scrollbar);
         border-radius: 4px;
       }
+
       .send-btn {
         width: 36px;
         height: 36px;
@@ -579,6 +536,7 @@
         width: 16px;
         height: 16px;
       }
+
       .input-hint {
         text-align: center;
         font-size: 11.5px;
@@ -637,9 +595,10 @@
           </div>
         </div>
 
-        <a href="/documents-manager" class="view-all-link"
-          >📋 View All Documents →</a
-        >
+        <!-- ✅ FIXED: points to /documents-manager (nice HTML page, not raw JSON) -->
+        <a href="/documents-manager" class="view-all-link">
+          📋 View All Documents →
+        </a>
       </div>
 
       <div class="sidebar-footer">
@@ -726,6 +685,7 @@
     </div>
 
     <script>
+      // ── Use relative paths — works on any host/port
       const API_STREAM = "/chat-stream";
       const API_HEALTH = "/health";
       const API_UPLOAD = "/upload";
@@ -735,19 +695,20 @@
       const msgInput = document.getElementById("msgInput");
       const sendBtn = document.getElementById("sendBtn");
 
-      // ── Health
+      // ── Health check
+      // ✅ FIXED: previous version always set "Offline" after "Online" due to missing return
       async function checkHealth() {
+        const dot = document.getElementById("statusDot");
+        const text = document.getElementById("statusText");
         try {
           const r = await fetch(API_HEALTH);
-          const d = await r.json();
-          const dot = document.getElementById("statusDot");
-          const text = document.getElementById("statusText");
+          await r.json();
           dot.className = "dot";
           text.textContent = "Online";
           updateStats();
-        } catch {
-          document.getElementById("statusDot").className = "dot error";
-          document.getElementById("statusText").textContent = "Offline";
+        } catch (e) {
+          dot.className = "dot error";
+          text.textContent = "Offline";
         }
       }
 
@@ -760,7 +721,9 @@
           document.getElementById("chunkCount").textContent =
             d.total_chunks || 0;
           renderDocList(d.uploaded_files || []);
-        } catch {}
+        } catch (e) {
+          console.error("updateStats error:", e);
+        }
       }
 
       function renderDocList(files) {
@@ -769,10 +732,10 @@
           .slice(0, 8)
           .map(
             (f) => `
-    <div class="doc-item">
-      <div class="doc-dot"></div>
-      <div class="doc-name" title="${f}">${f}</div>
-    </div>`,
+          <div class="doc-item">
+            <div class="doc-dot"></div>
+            <div class="doc-name" title="${f}">${f}</div>
+          </div>`,
           )
           .join("");
       }
@@ -824,7 +787,7 @@
       async function clearDocuments() {
         if (!confirm("Clear all documents? This cannot be undone.")) return;
         try {
-          const r = await fetch(API_DOCS, { method: "DELETE" });
+          await fetch(API_DOCS, { method: "DELETE" });
           addMsg("🗑️ All documents cleared.", false);
           updateStats();
         } catch (e) {
@@ -847,8 +810,7 @@
       }
 
       function removeWelcome() {
-        const w = document.getElementById("welcome");
-        if (w) w.remove();
+        document.getElementById("welcome")?.remove();
       }
 
       function addMsg(text, isUser = false, isError = false) {
@@ -856,15 +818,15 @@
         const row = document.createElement("div");
         row.className = "msg-row " + (isUser ? "user" : "bot");
         row.innerHTML = `
-    <div class="msg-inner">
-      <div class="avatar ${isUser ? "user" : "ai"}">${isUser ? "U" : "AI"}</div>
-      <div class="bubble">
-        <div class="bubble-text">${text}</div>
-        <div class="bubble-meta">
-          <span class="bubble-time">${now()}</span>
-        </div>
-      </div>
-    </div>`;
+          <div class="msg-inner">
+            <div class="avatar ${isUser ? "user" : "ai"}">${isUser ? "U" : "AI"}</div>
+            <div class="bubble">
+              <div class="bubble-text">${text}</div>
+              <div class="bubble-meta">
+                <span class="bubble-time">${now()}</span>
+              </div>
+            </div>
+          </div>`;
         chat.appendChild(row);
         chat.scrollTop = chat.scrollHeight;
         return row;
@@ -875,10 +837,10 @@
         el.className = "typing-wrap";
         el.id = "typing";
         el.innerHTML = `
-    <div class="typing-inner">
-      <div class="avatar ai">AI</div>
-      <div class="typing-dots"><span></span><span></span><span></span></div>
-    </div>`;
+          <div class="typing-inner">
+            <div class="avatar ai">AI</div>
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+          </div>`;
         chat.appendChild(el);
         chat.scrollTop = chat.scrollHeight;
       }
@@ -900,7 +862,7 @@
         }
       });
 
-      // ── Send
+      // ── Send message with streaming
       async function sendMessage() {
         const text = msgInput.value.trim();
         if (!text) return;
@@ -927,19 +889,19 @@
           const decoder = new TextDecoder();
           hideTyping();
 
-          // create streaming row
+          // Create streaming message row
           const row = document.createElement("div");
           row.className = "msg-row bot";
           row.innerHTML = `
-      <div class="msg-inner">
-        <div class="avatar ai">AI</div>
-        <div class="bubble">
-          <div class="bubble-text" id="stream-out"></div>
-          <div class="bubble-meta">
-            <span class="bubble-time">${now()}</span>
-          </div>
-        </div>
-      </div>`;
+            <div class="msg-inner">
+              <div class="avatar ai">AI</div>
+              <div class="bubble">
+                <div class="bubble-text" id="stream-out"></div>
+                <div class="bubble-meta">
+                  <span class="bubble-time">${now()}</span>
+                </div>
+              </div>
+            </div>`;
           chat.appendChild(row);
 
           const out = row.querySelector("#stream-out");
@@ -953,7 +915,7 @@
             chat.scrollTop = chat.scrollHeight;
           }
 
-          out.id = "";
+          out.id = ""; // clear id so next stream can reuse it
         } catch (e) {
           hideTyping();
           addMsg("❌ Error: " + e.message, false, true);
@@ -964,7 +926,10 @@
         }
       }
 
-      window.addEventListener("load", () => msgInput.focus());
+      window.addEventListener("load", () => {
+        msgInput.focus();
+        updateStats();
+      });
     </script>
   </body>
 </html>
