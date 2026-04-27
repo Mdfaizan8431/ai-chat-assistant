@@ -8,4 +8,4 @@ passlib[bcrypt]==1.7.4
 chromadb==0.4.22
 sentence-transformers==2.3.1
 
-numpy==1.26.4g
+numpy==1.26.4
