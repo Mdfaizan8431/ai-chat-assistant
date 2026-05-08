@@ -4,9 +4,7 @@ requests==2.31.0
 pydantic==1.10.13
 python-multipart==0.0.6
 passlib[bcrypt]==1.7.4
-
 chromadb==0.4.22
 sentence-transformers==2.3.1
-
 numpy==2.3.0
 torch==2.9.0
