@@ -6,7 +6,8 @@ Stores conversation messages in SQLite database
 import sqlite3
 from datetime import datetime
 
-DB_NAME = 'chat_history.db'
+import os
+DB_NAME = os.environ.get("DB_PATH", "/tmp/chat_history.db")
 
 def init_db():
     """Initialize the database and create tables if they don't exist"""
