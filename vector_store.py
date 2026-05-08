@@ -11,7 +11,7 @@ import os
 os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 class VectorStore:
-    def __init__(self, persist_directory="./chroma_db"):
+    def __init__(self, persist_directory="/tmp/chroma_db"):
         """Initialize ChromaDB and embedding model"""
         self.persist_directory = persist_directory
         
@@ -117,9 +117,9 @@ class VectorStore:
 # Global instance
 vector_store = None
 
+
 def get_vector_store():
-    """Get or create vector store instance"""
     global vector_store
     if vector_store is None:
-        vector_store = VectorStore()
+        vector_store = VectorStore(persist_directory="/tmp/chroma_db")
     return vector_store
