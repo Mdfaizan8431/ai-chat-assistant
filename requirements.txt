@@ -11,3 +11,4 @@ groq
 httpx
 anyio
 h11
+torch==2.9.0
