@@ -13,3 +13,4 @@ httpx
 anyio
 h11
 pypdf
+google-search-results
