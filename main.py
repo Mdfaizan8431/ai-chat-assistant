@@ -10,17 +10,11 @@ import os
 
 os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
-# ✅ THIS IS THE KEY FIX:
-# Get the folder where THIS file (app_rag.py) lives
-# So HTML files are always found, no matter where you run from
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # RAG + Groq
-from vector_store import get_vector_store
 from llm import stream_llm_response, get_llm_response
 from document_processor import process_file, get_supported_extensions
-
-# Agent
 from ai_agent import create_agent
 
 app = FastAPI(title="AI Chatbot with RAG", version="2.0.0")
@@ -42,53 +36,12 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 vector_store = None
 
 # ─────────────────────────────────────────────
-# RAG FUNCTION
+# KEY CHANGE: Only load vector store when needed
 # ─────────────────────────────────────────────
-def rag_chat(query):
-    try:
-        vs = get_or_init_vector_store()
-        results = vs.search(query, n_results=3)
-
-        if not results:
-            return {
-                "answer": "No relevant information found.",
-                "sources": []
-            }
-
-        context = "\n\n".join([r['text'][:500] for r in results])
-        sources = list(set([r['metadata'].get("source", "Unknown") for r in results]))
-
-        prompt = f"""
-        You are a strict AI assistant.
-
-        Answer ONLY from the context below.
-        If answer is not found, say exactly: "I don't know".
-
-        Context:
-        {context}
-
-        Question:
-        {query}
-
-        Answer:
-        """
-
-        answer = "".join([chunk for chunk in stream_llm_response(prompt)])
-
-        return {
-            "answer": answer,
-            "sources": sources
-        }
-
-    except Exception as e:
-        return {
-            "answer": f"Error: {str(e)}",
-            "sources": []
-        }
-
 def get_or_init_vector_store():
     global vector_store
     if vector_store is None:
+        from vector_store import get_vector_store
         vector_store = get_vector_store()
     return vector_store
 
@@ -101,8 +54,6 @@ class Message(BaseModel):
 # ─────────────────────────────────────────────
 # ROUTES
 # ─────────────────────────────────────────────
-
-# ✅ FIXED: Use BASE_DIR so the file is always found
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     try:
@@ -111,13 +62,10 @@ async def serve_frontend():
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(
-            "<h1>❌ chatbot-interface-agent.html not found</h1>"
-            f"<p>Looking in: {BASE_DIR}</p>"
-            "<p>Make sure the HTML file is in the same folder as app_rag.py</p>",
+            "<h1>❌ chatbot-interface-agent.html not found</h1>",
             status_code=404
         )
 
-# ✅ FIXED: Documents manager page
 @app.get("/documents-manager", response_class=HTMLResponse)
 async def serve_documents_manager():
     try:
@@ -126,11 +74,9 @@ async def serve_documents_manager():
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(
-            "<h1>❌ documents-manager.html not found</h1>"
-            f"<p>Looking in: {BASE_DIR}</p>",
+            "<h1>❌ documents-manager.html not found</h1>",
             status_code=404
         )
-
 
 @app.get("/health")
 def health_check():
@@ -140,6 +86,28 @@ def health_check():
         "groq": "connected"
     }
 
+# ─────────────────────────────────────────────
+# KEY CHANGE: /documents now returns safely
+# without loading vector store if no files exist
+# ─────────────────────────────────────────────
+@app.get("/documents")
+def list_documents():
+    uploaded_files = os.listdir(UPLOAD_DIR)
+    
+    # Only load vector store if files exist
+    if len(uploaded_files) > 0:
+        try:
+            vs = get_or_init_vector_store()
+            total_chunks = vs.get_stats()['total_chunks']
+        except Exception:
+            total_chunks = 0
+    else:
+        total_chunks = 0
+
+    return {
+        "total_chunks": total_chunks,
+        "uploaded_files": uploaded_files
+    }
 
 # ─────────────────────────────────────────────
 # FILE UPLOAD
@@ -170,18 +138,37 @@ async def upload_document(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # ─────────────────────────────────────────────
-# DOCUMENT LIST
+# RAG FUNCTION
 # ─────────────────────────────────────────────
-@app.get("/documents")
-def list_documents():
-    vs = get_or_init_vector_store()
-    return {
-        "total_chunks": vs.get_stats()['total_chunks'],
-        "uploaded_files": os.listdir(UPLOAD_DIR)
-    }
+def rag_chat(query):
+    try:
+        vs = get_or_init_vector_store()
+        results = vs.search(query, n_results=3)
 
+        if not results:
+            return {"answer": "No relevant information found.", "sources": []}
+
+        context = "\n\n".join([r['text'][:500] for r in results])
+        sources = list(set([r['metadata'].get("source", "Unknown") for r in results]))
+
+        prompt = f"""You are a strict AI assistant.
+Answer ONLY from the context below.
+If answer is not found, say exactly: "I don't know".
+
+Context:
+{context}
+
+Question:
+{query}
+
+Answer:"""
+
+        answer = "".join([chunk for chunk in stream_llm_response(prompt)])
+        return {"answer": answer, "sources": sources}
+
+    except Exception as e:
+        return {"answer": f"Error: {str(e)}", "sources": []}
 
 # ─────────────────────────────────────────────
 # MAIN CHAT
@@ -194,7 +181,6 @@ async def chat(msg: Message):
         raise HTTPException(status_code=400, detail="Empty message")
 
     save_message("User", user_text)
-
     query_lower = user_text.lower()
 
     use_web = any(word in query_lower for word in ["latest", "news", "today", "current"])
@@ -231,7 +217,6 @@ async def chat(msg: Message):
 
     except Exception as e:
         return {"reply": f"Error: {str(e)}"}
-
 
 # ─────────────────────────────────────────────
 # STREAM CHAT
@@ -289,7 +274,6 @@ def chat_stream(msg: Message):
             yield f"Error: {str(e)}"
 
     return StreamingResponse(generator(), media_type="text/plain")
-
 
 # ─────────────────────────────────────────────
 # RUN SERVER
