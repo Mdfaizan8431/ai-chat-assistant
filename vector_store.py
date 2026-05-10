@@ -4,7 +4,7 @@ Handles document storage, embedding, and retrieval
 """
 
 import chromadb
-from sentence_transformers import SentenceTransformer
+from chromadb.utils import embedding_functions
 from typing import List, Dict
 import hashlib
 import os
@@ -16,19 +16,20 @@ class VectorStore:
         self.persist_directory = persist_directory
         
         # PersistentClient is the correct way in chromadb >= 0.4.x
-        # This also fixes the telemetry crash automatically
         self.client = chromadb.PersistentClient(path=persist_directory)
         
-        # Create or get collection
+        # Use ChromaDB's built-in lightweight embedding function
+        # This uses almost no RAM compared to SentenceTransformer
+        print("Loading embedding model...")
+        self.embedding_model = embedding_functions.DefaultEmbeddingFunction()
+        print("✅ Embedding model loaded!")
+        
+        # Create or get collection WITH the embedding function
         self.collection = self.client.get_or_create_collection(
             name="documents",
+            embedding_function=self.embedding_model,
             metadata={"description": "RAG document store"}
         )
-        
-        # Load embedding model (lightweight and fast)
-        print("Loading embedding model...")
-        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-        print("✅ Embedding model loaded!")
         
     def add_documents(self, texts: List[str], metadatas: List[Dict] = None):
         """
@@ -41,9 +42,7 @@ class VectorStore:
         if not texts:
             return
         
-        # Generate embeddings
         print(f"Generating embeddings for {len(texts)} chunks...")
-        embeddings = self.embedding_model.encode(texts, show_progress_bar=True)
         
         # Generate unique IDs
         ids = [hashlib.md5(text.encode()).hexdigest() for text in texts]
@@ -54,9 +53,8 @@ class VectorStore:
         else:
             metadatas = [{k: str(v) for k, v in m.items()} for m in metadatas]
         
-        # Add to ChromaDB
+        # Add to ChromaDB — embedding happens automatically
         self.collection.add(
-            embeddings=embeddings.tolist(),
             documents=texts,
             metadatas=metadatas,
             ids=ids
@@ -75,12 +73,9 @@ class VectorStore:
         Returns:
             List of relevant documents with metadata
         """
-        # Generate query embedding
-        query_embedding = self.embedding_model.encode([query])[0]
-        
-        # Search
+        # ChromaDB handles embedding automatically
         results = self.collection.query(
-            query_embeddings=[query_embedding.tolist()],
+            query_texts=[query],
             n_results=n_results
         )
         
@@ -106,17 +101,16 @@ class VectorStore:
     
     def clear(self):
         """Clear all documents from the collection"""
-        # Delete and recreate collection
         self.client.delete_collection(name="documents")
         self.collection = self.client.get_or_create_collection(
             name="documents",
+            embedding_function=self.embedding_model,
             metadata={"description": "RAG document store"}
         )
         print("✅ Vector store cleared")
 
 # Global instance
 vector_store = None
-
 
 def get_vector_store():
     global vector_store
