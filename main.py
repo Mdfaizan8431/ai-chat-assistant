@@ -46,7 +46,22 @@ def get_or_init_vector_store():
     return vector_store
 
 
-system_prompt = """You are a helpful AI assistant."""
+system_prompt = """You are a helpful AI assistant.
+
+Rules:
+1. If you are not sure about something, say:
+   "I'm not certain about this. Please verify."
+
+2. If asked about events after early 2024, say:
+   "This might be after my training data.
+   Let me search for current information."
+
+3. Never make up information you don't know.
+
+4. MCP = Model Context Protocol by Anthropic (2024)
+   - Connects AI models to external tools
+   - Like a universal standard for AI integrations
+"""
 
 class Message(BaseModel):
     text: str
@@ -183,7 +198,10 @@ async def chat(msg: Message):
     save_message("User", user_text)
     query_lower = user_text.lower()
 
-    use_web = any(word in query_lower for word in ["latest", "news", "today", "current"])
+    use_web = any(word in query_lower for word in
+        ["latest", "news", "today", "current",
+        "what is", "explain", "tell me about",
+        "mcp", "protocol", "2024", "2025"])
     use_rag = len(os.listdir(UPLOAD_DIR)) > 0 and any(
         word in query_lower for word in ["document", "file", "pdf", "my data"]
     )
