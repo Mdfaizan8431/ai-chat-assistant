@@ -273,7 +273,15 @@ def chat_stream(msg: Message):
         except Exception as e:
             yield f"Error: {str(e)}"
 
-    return StreamingResponse(generator(), media_type="text/plain")
+    return StreamingResponse(
+    generator(),
+    media_type="text/plain",
+    headers={
+        "X-Accel-Buffering": "no",
+        "Cache-Control": "no-cache",
+        "Transfer-Encoding": "chunked"
+    }
+)
 
 # ─────────────────────────────────────────────
 # RUN SERVER
