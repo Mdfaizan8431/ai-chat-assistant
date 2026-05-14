@@ -397,11 +397,12 @@
         flex: 1;
         min-width: 0;
       }
+
+      /* ✅ UPDATED: removed white-space pre-wrap, added markdown styles */
       .bubble-text {
         font-size: 14.5px;
         line-height: 1.75;
         color: var(--text);
-        white-space: pre-wrap;
         word-break: break-word;
       }
       .msg-row.user .bubble-text {
@@ -410,6 +411,7 @@
         padding: 10px 14px;
         display: inline-block;
         max-width: 100%;
+        white-space: pre-wrap;
       }
       .bubble-meta {
         display: flex;
@@ -420,6 +422,77 @@
       .bubble-time {
         font-size: 11px;
         color: var(--text-dim);
+      }
+
+      /* ✅ NEW: Markdown rendering styles */
+      .bubble-text h1,
+      .bubble-text h2,
+      .bubble-text h3 {
+        margin: 10px 0 6px;
+        color: var(--text);
+      }
+      .bubble-text p {
+        margin-bottom: 8px;
+      }
+      .bubble-text ul,
+      .bubble-text ol {
+        padding-left: 20px;
+        margin-bottom: 8px;
+      }
+      .bubble-text li {
+        margin-bottom: 4px;
+      }
+      .bubble-text code {
+        background: var(--surface2);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: monospace;
+      }
+      .bubble-text pre {
+        background: var(--surface2);
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 8px 0;
+      }
+      .bubble-text pre code {
+        background: transparent;
+        padding: 0;
+        font-size: 13px;
+      }
+      .bubble-text strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+      .bubble-text em {
+        color: var(--text-muted);
+        font-style: italic;
+      }
+      .bubble-text blockquote {
+        border-left: 3px solid var(--accent);
+        padding-left: 12px;
+        margin: 8px 0;
+        color: var(--text-muted);
+      }
+      .bubble-text a {
+        color: var(--accent);
+        text-decoration: underline;
+      }
+      .bubble-text table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+      }
+      .bubble-text th,
+      .bubble-text td {
+        border: 1px solid var(--border);
+        padding: 6px 10px;
+        text-align: left;
+      }
+      .bubble-text th {
+        background: var(--surface2);
+        font-weight: 600;
       }
 
       /* Typing indicator */
@@ -596,7 +669,6 @@
           </div>
         </div>
 
-        <!-- ✅ FIXED: points to /documents-manager (nice HTML page, not raw JSON) -->
         <a href="/documents-manager" class="view-all-link">
           📋 View All Documents →
         </a>
@@ -686,7 +758,6 @@
     </div>
 
     <script>
-      // ── Use relative paths — works on any host/port
       const API_STREAM = "/chat-stream";
       const API_HEALTH = "/health";
       const API_UPLOAD = "/upload";
@@ -696,8 +767,6 @@
       const msgInput = document.getElementById("msgInput");
       const sendBtn = document.getElementById("sendBtn");
 
-      // ── Health check
-      // ✅ FIXED: previous version always set "Offline" after "Online" due to missing return
       async function checkHealth() {
         const dot = document.getElementById("statusDot");
         const text = document.getElementById("statusText");
@@ -744,7 +813,6 @@
       checkHealth();
       setInterval(checkHealth, 30000);
 
-      // ── Upload
       const zone = document.getElementById("uploadZone");
       zone.addEventListener("dragover", (e) => {
         e.preventDefault();
@@ -796,7 +864,6 @@
         }
       }
 
-      // ── Helpers
       function now() {
         return new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
@@ -822,7 +889,7 @@
           <div class="msg-inner">
             <div class="avatar ${isUser ? "user" : "ai"}">${isUser ? "U" : "AI"}</div>
             <div class="bubble">
-              <div class="bubble-text">${text}</div>
+              <div class="bubble-text">${isUser ? text : marked.parse(text)}</div>
               <div class="bubble-meta">
                 <span class="bubble-time">${now()}</span>
               </div>
@@ -850,7 +917,6 @@
         document.getElementById("typing")?.remove();
       }
 
-      // ── Auto-resize textarea
       msgInput.addEventListener("input", function () {
         this.style.height = "auto";
         this.style.height = Math.min(this.scrollHeight, 180) + "px";
@@ -863,7 +929,6 @@
         }
       });
 
-      // ── Send message with streaming
       async function sendMessage() {
         const text = msgInput.value.trim();
         if (!text) return;
@@ -890,7 +955,6 @@
           const decoder = new TextDecoder();
           hideTyping();
 
-          // Create streaming message row
           const row = document.createElement("div");
           row.className = "msg-row bot";
           row.innerHTML = `
@@ -916,7 +980,7 @@
             chat.scrollTop = chat.scrollHeight;
           }
 
-          out.id = ""; // clear id so next stream can reuse it
+          out.id = "";
         } catch (e) {
           hideTyping();
           addMsg("❌ Error: " + e.message, false, true);
