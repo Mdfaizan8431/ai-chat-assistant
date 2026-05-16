@@ -100,7 +100,27 @@ def health_check():
         "timestamp": datetime.now().isoformat(),
         "groq": "connected"
     }
+@app.get("/history")
+def get_history():
+    """Get recent chat messages for sidebar"""
+    try:
+        messages = get_last_messages(limit=20)
+        return {"messages": [
+            {"role": role, "content": content}
+            for role, content in messages
+        ]}
+    except Exception as e:
+        return {"messages": []}
 
+@app.delete("/history")
+def clear_history():
+    """Clear chat history"""
+    try:
+        from db import clear_history as db_clear
+        db_clear()
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 # ─────────────────────────────────────────────
 # KEY CHANGE: /documents now returns safely
 # without loading vector store if no files exist
