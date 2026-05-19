@@ -218,10 +218,11 @@ async def chat(msg: Message):
     save_message("User", user_text)
     query_lower = user_text.lower()
 
-    use_web = any(word in query_lower for word in
-        ["latest", "news", "today", "current",
-        "what is", "explain", "tell me about",
-        "mcp", "protocol", "2024", "2025"])
+    use_web = any(word in query_lower for word in [
+        "latest", "news", "today", "current",
+        "price", "weather", "2025", "right now",
+        "currently", "recent"
+    ])
     use_rag = len(os.listdir(UPLOAD_DIR)) > 0 and any(
         word in query_lower for word in ["document", "file", "pdf", "my data"]
     )

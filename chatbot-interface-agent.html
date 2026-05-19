@@ -19,7 +19,6 @@
         --text-dim: #6b6b7b;
         --accent: #10a37f;
         --accent-hover: #0e9070;
-        --user-bubble: #2f2f2f;
         --input-bg: #2f2f2f;
         --danger: #ef4444;
         --scrollbar: #3d3d3d;
@@ -33,7 +32,7 @@
         display: flex;
       }
 
-      /* ── SIDEBAR ── */
+      /* SIDEBAR */
       .sidebar {
         width: 260px;
         min-width: 260px;
@@ -72,8 +71,6 @@
         font-size: 15px;
         flex-shrink: 0;
       }
-
-      /* New Chat Button */
       .new-chat-btn {
         width: 100%;
         padding: 9px 14px;
@@ -95,7 +92,6 @@
         background: var(--accent-hover);
         transform: scale(1.01);
       }
-
       .section-label {
         font-size: 11px;
         font-weight: 600;
@@ -112,72 +108,8 @@
         flex-direction: column;
       }
       .sidebar-body::-webkit-scrollbar { width: 4px; }
-      .sidebar-body::-webkit-scrollbar-thumb {
-        background: var(--scrollbar);
-        border-radius: 4px;
-      }
+      .sidebar-body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
 
-      /* Recent Chats */
-      .recent-section {
-        padding: 0 4px;
-        margin-bottom: 8px;
-      }
-      .recent-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        border-radius: 8px;
-        font-size: 12.5px;
-        color: var(--text-muted);
-        margin-bottom: 2px;
-        cursor: pointer;
-        transition: background 0.15s;
-        border: none;
-        background: transparent;
-        width: 100%;
-        text-align: left;
-        font-family: inherit;
-      }
-      .recent-item:hover {
-        background: var(--surface);
-        color: var(--text);
-      }
-      .recent-item.active {
-        background: var(--surface);
-        color: var(--text);
-      }
-      .recent-icon {
-        font-size: 13px;
-        flex-shrink: 0;
-      }
-      .recent-text {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .recent-time {
-        font-size: 10px;
-        color: var(--text-dim);
-        flex-shrink: 0;
-      }
-      .no-history {
-        font-size: 12px;
-        color: var(--text-dim);
-        text-align: center;
-        padding: 16px 8px;
-        font-style: italic;
-      }
-
-      /* Divider */
-      .sidebar-divider {
-        border: none;
-        border-top: 1px solid var(--border);
-        margin: 4px 0;
-      }
-
-      /* Upload area */
       .upload-zone {
         border: 1.5px dashed var(--border);
         border-radius: 10px;
@@ -188,20 +120,13 @@
         margin: 4px 4px 6px;
         background: transparent;
       }
-      .upload-zone:hover {
-        border-color: var(--accent);
-        background: rgba(16, 163, 127, 0.05);
-      }
-      .upload-zone.drag {
-        border-color: var(--accent);
-        background: rgba(16, 163, 127, 0.08);
-      }
+      .upload-zone:hover { border-color: var(--accent); background: rgba(16, 163, 127, 0.05); }
+      .upload-zone.drag { border-color: var(--accent); background: rgba(16, 163, 127, 0.08); }
       .upload-icon { font-size: 20px; margin-bottom: 4px; color: var(--text-muted); }
       .upload-main { font-size: 12.5px; color: var(--text); font-weight: 500; margin-bottom: 2px; }
       .upload-sub { font-size: 11px; color: var(--text-dim); }
       #fileInput { display: none; }
 
-      /* Doc list */
       .doc-item {
         display: flex;
         align-items: center;
@@ -213,32 +138,11 @@
         margin-bottom: 2px;
         background: var(--surface);
       }
-      .doc-item .doc-name {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .doc-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--accent);
-        flex-shrink: 0;
-      }
+      .doc-item .doc-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .doc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 
-      /* Stats */
-      .stat-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        padding: 4px 4px 6px;
-      }
-      .stat-card {
-        background: var(--surface);
-        border-radius: 8px;
-        padding: 8px 12px;
-      }
+      .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px 4px 6px; }
+      .stat-card { background: var(--surface); border-radius: 8px; padding: 8px 12px; }
       .stat-val { font-size: 16px; font-weight: 600; color: var(--text); }
       .stat-lbl { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 
@@ -254,10 +158,7 @@
       }
       .view-all-link:hover { background: var(--surface); }
 
-      .sidebar-footer {
-        padding: 8px 8px 12px;
-        border-top: 1px solid var(--border);
-      }
+      .sidebar-footer { padding: 8px 8px 12px; border-top: 1px solid var(--border); }
       .clear-btn {
         width: 100%;
         padding: 8px 14px;
@@ -275,21 +176,11 @@
         gap: 6px;
         font-family: inherit;
       }
-      .clear-btn:hover {
-        background: rgba(239, 68, 68, 0.08);
-        border-color: var(--danger);
-      }
+      .clear-btn:hover { background: rgba(239, 68, 68, 0.08); border-color: var(--danger); }
 
-      /* ── MAIN AREA ── */
-      .main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-      }
+      /* MAIN AREA */
+      .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-      /* Header */
       .header {
         padding: 14px 20px;
         border-bottom: 1px solid var(--border);
@@ -300,7 +191,6 @@
         flex-shrink: 0;
       }
       .header-title { font-size: 15px; font-weight: 600; color: var(--text); }
-      .header-right { display: flex; align-items: center; gap: 10px; }
       .status-pill {
         display: flex;
         align-items: center;
@@ -312,20 +202,15 @@
         color: var(--text-muted);
       }
       .dot {
-        width: 7px;
-        height: 7px;
+        width: 7px; height: 7px;
         border-radius: 50%;
         background: var(--accent);
         flex-shrink: 0;
         animation: blink 2s ease-in-out infinite;
       }
       .dot.error { background: var(--danger); animation: none; }
-      @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
-      }
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-      /* Chat */
       .chat {
         flex: 1;
         overflow-y: auto;
@@ -337,16 +222,9 @@
       .chat::-webkit-scrollbar { width: 6px; }
       .chat::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
 
-      /* Welcome screen */
-      .welcome {
-        margin: auto;
-        text-align: center;
-        padding: 40px 24px;
-        max-width: 520px;
-      }
+      .welcome { margin: auto; text-align: center; padding: 40px 24px; max-width: 520px; }
       .welcome-icon {
-        width: 52px;
-        height: 52px;
+        width: 52px; height: 52px;
         border-radius: 14px;
         background: var(--accent);
         display: flex;
@@ -371,11 +249,8 @@
       }
       .chip:hover { border-color: var(--accent); color: var(--text); background: rgba(16, 163, 127, 0.06); }
 
-      /* ── MESSAGE ROWS — ChatGPT Style ── */
-      .msg-row {
-        padding: 6px 0;
-        width: 100%;
-      }
+      /* MESSAGE ROWS */
+      .msg-row { padding: 6px 0; width: 100%; }
       .msg-inner {
         max-width: 720px;
         margin: 0 auto;
@@ -385,16 +260,9 @@
         align-items: flex-start;
       }
 
-      /* ✅ USER messages — RIGHT side */
-      .msg-row.user .msg-inner {
-        flex-direction: row-reverse;
-        justify-content: flex-start;
-      }
-      .msg-row.user .bubble {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-      }
+      /* USER — RIGHT side */
+      .msg-row.user .msg-inner { flex-direction: row-reverse; justify-content: flex-start; }
+      .msg-row.user .bubble { display: flex; flex-direction: column; align-items: flex-end; }
       .msg-row.user .bubble-text {
         background: var(--accent);
         color: #fff;
@@ -407,14 +275,10 @@
         font-size: 14.5px;
         line-height: 1.6;
       }
-      .msg-row.user .bubble-meta {
-        justify-content: flex-end;
-      }
+      .msg-row.user .bubble-meta { justify-content: flex-end; }
 
-      /* ✅ AI messages — LEFT side */
-      .msg-row.bot .msg-inner {
-        flex-direction: row;
-      }
+      /* AI — LEFT side */
+      .msg-row.bot .msg-inner { flex-direction: row; }
       .msg-row.bot .bubble-text {
         font-size: 14.5px;
         line-height: 1.75;
@@ -423,8 +287,7 @@
       }
 
       .avatar {
-        width: 32px;
-        height: 32px;
+        width: 32px; height: 32px;
         border-radius: 8px;
         flex-shrink: 0;
         display: flex;
@@ -441,70 +304,33 @@
       .bubble-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
       .bubble-time { font-size: 11px; color: var(--text-dim); }
 
-      /* Markdown styles */
+      /* Markdown */
       .bubble-text h1, .bubble-text h2, .bubble-text h3 { margin: 10px 0 6px; color: var(--text); }
       .bubble-text p { margin-bottom: 8px; }
       .bubble-text ul, .bubble-text ol { padding-left: 20px; margin-bottom: 8px; }
       .bubble-text li { margin-bottom: 4px; }
-      .bubble-text code {
-        background: var(--surface2);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 13px;
-        font-family: monospace;
-      }
-      .bubble-text pre {
-        background: var(--surface2);
-        padding: 12px;
-        border-radius: 8px;
-        overflow-x: auto;
-        margin: 8px 0;
-      }
+      .bubble-text code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: monospace; }
+      .bubble-text pre { background: var(--surface2); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
       .bubble-text pre code { background: transparent; padding: 0; }
       .bubble-text strong { color: var(--text); font-weight: 600; }
       .bubble-text em { color: var(--text-muted); font-style: italic; }
-      .bubble-text blockquote {
-        border-left: 3px solid var(--accent);
-        padding-left: 12px;
-        margin: 8px 0;
-        color: var(--text-muted);
-      }
+      .bubble-text blockquote { border-left: 3px solid var(--accent); padding-left: 12px; margin: 8px 0; color: var(--text-muted); }
       .bubble-text a { color: var(--accent); text-decoration: underline; }
       .bubble-text table { border-collapse: collapse; width: 100%; margin: 8px 0; }
       .bubble-text th, .bubble-text td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
       .bubble-text th { background: var(--surface2); font-weight: 600; }
 
-      /* Typing indicator */
+      /* Typing */
       .typing-wrap { padding: 8px 0; }
-      .typing-inner {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 0 24px;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
+      .typing-inner { max-width: 720px; margin: 0 auto; padding: 0 24px; display: flex; gap: 12px; align-items: center; }
       .typing-dots { display: flex; gap: 4px; padding: 10px 4px; }
-      .typing-dots span {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--text-muted);
-        animation: bounce 1.2s ease-in-out infinite;
-      }
+      .typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); animation: bounce 1.2s ease-in-out infinite; }
       .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
       .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-      @keyframes bounce {
-        0%, 60%, 100% { transform: translateY(0); }
-        30% { transform: translateY(-7px); }
-      }
+      @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
 
-      /* Input area */
-      .input-area {
-        padding: 12px 20px 20px;
-        background: var(--bg);
-        flex-shrink: 0;
-      }
+      /* Input */
+      .input-area { padding: 12px 20px 20px; background: var(--bg); flex-shrink: 0; }
       .input-box {
         max-width: 720px;
         margin: 0 auto;
@@ -534,10 +360,8 @@
       #msgInput::placeholder { color: var(--text-dim); }
       #msgInput::-webkit-scrollbar { width: 4px; }
       #msgInput::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
-
       .send-btn {
-        width: 36px;
-        height: 36px;
+        width: 36px; height: 36px;
         border-radius: 9px;
         border: none;
         background: var(--accent);
@@ -564,43 +388,23 @@
     </style>
   </head>
   <body>
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-top">
         <div class="sidebar-logo">
           <div class="logo-icon">🤖</div>
           AI Assistant
         </div>
-
-        <!-- ✅ NEW CHAT BUTTON -->
-        <button class="new-chat-btn" onclick="newChat()">
-          ✏️ New Chat
-        </button>
+        <button class="new-chat-btn" onclick="newChat()">✏️ New Chat</button>
       </div>
 
       <div class="sidebar-body">
-
-        <!-- ✅ RECENT CHATS SECTION -->
-        <div class="section-label">Recent Chats</div>
-        <div class="recent-section" id="recentChats">
-          <div class="no-history">No recent chats</div>
-        </div>
-
-        <hr class="sidebar-divider" />
-
-        <!-- RAG SETTINGS -->
         <div class="section-label">RAG Settings</div>
-        <div
-          class="upload-zone"
-          id="uploadZone"
-          onclick="document.getElementById('fileInput').click()"
-        >
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
           <div class="upload-icon">📄</div>
           <div class="upload-main">Click or drag files</div>
           <div class="upload-sub">PDF, TXT supported</div>
         </div>
         <input type="file" id="fileInput" accept=".pdf,.txt" multiple />
-
         <div id="docList"></div>
 
         <div class="section-label" style="margin-top: 4px">Stats</div>
@@ -614,28 +418,20 @@
             <div class="stat-lbl">Chunks</div>
           </div>
         </div>
-
-        <a href="/documents-manager" class="view-all-link">
-          📋 View All Documents →
-        </a>
+        <a href="/documents-manager" class="view-all-link">📋 View All Documents →</a>
       </div>
 
       <div class="sidebar-footer">
-        <button class="clear-btn" onclick="clearDocuments()">
-          🗑️ Clear All Documents
-        </button>
+        <button class="clear-btn" onclick="clearDocuments()">🗑️ Clear All Documents</button>
       </div>
     </aside>
 
-    <!-- MAIN -->
     <div class="main">
       <header class="header">
         <div class="header-title">AI Chat + RAG + Agents</div>
-        <div class="header-right">
-          <div class="status-pill">
-            <div class="dot" id="statusDot"></div>
-            <span id="statusText">Checking…</span>
-          </div>
+        <div class="status-pill">
+          <div class="dot" id="statusDot"></div>
+          <span id="statusText">Checking…</span>
         </div>
       </header>
 
@@ -672,83 +468,17 @@
       const API_HEALTH = "/health";
       const API_UPLOAD = "/upload";
       const API_DOCS = "/documents";
-      const API_HISTORY = "/history";
 
       const chat = document.getElementById("chat");
       const msgInput = document.getElementById("msgInput");
       const sendBtn = document.getElementById("sendBtn");
 
-      // ── Session chat history (current session only)
-      let sessionChats = [];  // list of {id, title, messages, time}
-      let currentChatId = null;
-      let currentMessages = [];
-
-      // ── Create new session chat
-      function createNewSession(firstMessage = null) {
-        const id = Date.now();
-        const title = firstMessage
-          ? firstMessage.substring(0, 30) + (firstMessage.length > 30 ? "..." : "")
-          : "New Chat";
-        const session = { id, title, messages: [], time: new Date() };
-        sessionChats.unshift(session);
-        currentChatId = id;
-        currentMessages = [];
-        renderRecentChats();
-        return session;
-      }
-
-      // ── New Chat button
+      // New Chat — opens fresh tab
       function newChat() {
-        // Open new tab with same URL
         window.open(window.location.href, "_blank");
       }
 
-      // ── Render recent chats in sidebar
-      function renderRecentChats() {
-        const el = document.getElementById("recentChats");
-        if (sessionChats.length === 0) {
-          el.innerHTML = '<div class="no-history">No recent chats</div>';
-          return;
-        }
-        el.innerHTML = sessionChats.map(s => `
-          <button class="recent-item ${s.id === currentChatId ? 'active' : ''}"
-            onclick="loadChat(${s.id})">
-            <span class="recent-icon">💬</span>
-            <span class="recent-text">${s.title}</span>
-            <span class="recent-time">${formatTime(s.time)}</span>
-          </button>
-        `).join("");
-      }
-
-      // ── Format time for sidebar
-      function formatTime(date) {
-        const now = new Date();
-        const diff = Math.floor((now - date) / 60000);
-        if (diff < 1) return "now";
-        if (diff < 60) return `${diff}m`;
-        return `${Math.floor(diff / 60)}h`;
-      }
-
-      // ── Load a past chat session
-      function loadChat(id) {
-        const session = sessionChats.find(s => s.id === id);
-        if (!session) return;
-
-        currentChatId = id;
-        currentMessages = session.messages;
-
-        // Clear chat UI
-        chat.innerHTML = "";
-
-        // Replay messages
-        session.messages.forEach(m => {
-          addMsgToUI(m.text, m.isUser);
-        });
-
-        renderRecentChats();
-      }
-
-      // ── Health check
+      // Health check
       async function checkHealth() {
         const dot = document.getElementById("statusDot");
         const text = document.getElementById("statusText");
@@ -787,9 +517,8 @@
 
       checkHealth();
       setInterval(checkHealth, 30000);
-      setInterval(renderRecentChats, 60000); // refresh times every minute
 
-      // ── Upload
+      // Upload
       const zone = document.getElementById("uploadZone");
       zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("drag"); });
       zone.addEventListener("dragleave", () => zone.classList.remove("drag"));
@@ -805,20 +534,20 @@
       }
 
       async function uploadFile(file) {
-        addMsgToUI(`Uploading ${file.name}…`, false);
+        addMsg(`Uploading ${file.name}…`, false);
         try {
           const fd = new FormData();
           fd.append("file", file);
           const r = await fetch(API_UPLOAD, { method: "POST", body: fd });
           const d = await r.json();
           if (r.ok) {
-            addMsgToUI(`✅ ${file.name} uploaded — ${d.chunks_added} chunks indexed`, false);
+            addMsg(`✅ ${file.name} uploaded — ${d.chunks_added} chunks indexed`, false);
             updateStats();
           } else {
-            addMsgToUI(`❌ Upload failed: ${d.detail}`, false);
+            addMsg(`❌ Upload failed: ${d.detail}`, false);
           }
         } catch (e) {
-          addMsgToUI(`❌ Upload error: ${e.message}`, false);
+          addMsg(`❌ Upload error: ${e.message}`, false);
         }
       }
 
@@ -826,14 +555,13 @@
         if (!confirm("Clear all documents? This cannot be undone.")) return;
         try {
           await fetch(API_DOCS, { method: "DELETE" });
-          addMsgToUI("🗑️ All documents cleared.", false);
+          addMsg("🗑️ All documents cleared.", false);
           updateStats();
         } catch (e) {
-          addMsgToUI("❌ Could not clear: " + e.message, false);
+          addMsg("❌ Could not clear: " + e.message, false);
         }
       }
 
-      // ── Helpers
       function now() {
         return new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       }
@@ -848,8 +576,16 @@
         document.getElementById("welcome")?.remove();
       }
 
-      // ── Add message to UI only
-      function addMsgToUI(text, isUser = false) {
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function addMsg(text, isUser = false) {
         removeWelcome();
         const row = document.createElement("div");
         row.className = "msg-row " + (isUser ? "user" : "bot");
@@ -866,16 +602,6 @@
         chat.appendChild(row);
         chat.scrollTop = chat.scrollHeight;
         return row;
-      }
-
-      // ── Escape HTML for user messages (security)
-      function escapeHtml(text) {
-        return text
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
       }
 
       function showTyping() {
@@ -895,7 +621,6 @@
         document.getElementById("typing")?.remove();
       }
 
-      // ── Auto-resize textarea
       msgInput.addEventListener("input", function () {
         this.style.height = "auto";
         this.style.height = Math.min(this.scrollHeight, 180) + "px";
@@ -908,33 +633,14 @@
         }
       });
 
-      // ── Send message with streaming
       async function sendMessage() {
         const text = msgInput.value.trim();
         if (!text) return;
 
         removeWelcome();
-
-        // Create session if first message
-        if (!currentChatId) {
-          createNewSession(text);
-        }
-
-        // Save user message to session
-        currentMessages.push({ text, isUser: true });
-        const session = sessionChats.find(s => s.id === currentChatId);
-        if (session) {
-          session.messages = currentMessages;
-          // Update title if first real message
-          if (currentMessages.length === 1) {
-            session.title = text.substring(0, 30) + (text.length > 30 ? "..." : "");
-          }
-        }
-
-        addMsgToUI(text, true);
+        addMsg(text, true);
         msgInput.value = "";
         msgInput.style.height = "auto";
-
         msgInput.disabled = true;
         sendBtn.disabled = true;
         showTyping();
@@ -952,7 +658,6 @@
           const decoder = new TextDecoder();
           hideTyping();
 
-          // Create streaming message row
           const row = document.createElement("div");
           row.className = "msg-row bot";
           row.innerHTML = `
@@ -980,14 +685,9 @@
 
           out.id = "";
 
-          // Save AI response to session
-          currentMessages.push({ text: full, isUser: false });
-          if (session) session.messages = currentMessages;
-          renderRecentChats();
-
         } catch (e) {
           hideTyping();
-          addMsgToUI("❌ Error: " + e.message, false);
+          addMsg("❌ Error: " + e.message, false);
         } finally {
           msgInput.disabled = false;
           sendBtn.disabled = false;
